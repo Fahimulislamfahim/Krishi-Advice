@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_colors.dart';
 
 class ProfileSettingsScreen extends StatefulWidget {
@@ -9,24 +11,31 @@ class ProfileSettingsScreen extends StatefulWidget {
 }
 
 class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
-  final List<Map<String, dynamic>> _plots = [
-    {
-      'title': 'North Field A',
-      'status': 'Active',
-      'crop': 'Wheat',
-      'size': '120 Acres',
-      'cropIcon': Icons.grass,
-      'image': 'https://lh3.googleusercontent.com/aida-public/AB6AXuCewV0lukXKIcXifpzx8bjiXdyO7yOUcrGq6D3VGsKn9BH-Z22lINJcFyrM9Xvh6TOOPbz_xmrgNnEFPaRfRBMHo1AbCzII7txBvUoZv9b6zh1njqhh452DdVXAHJBzHzGxMhdLJg9neLqoMOfdHgzE81GnOdX9HN-kwgCVt7tsEXPb9DBiWj_ecfijcIa5uY40IMPugwWeKhpub8Ion_xPp0-hezVgWxJp5gMTznfgeczguwyCyWDxO8K_ermjS1qm0HTwHNq_F1tJ',
-    },
-    {
-      'title': 'East Valley',
-      'status': 'Active',
-      'crop': 'Soybeans',
-      'size': '85 Acres',
-      'cropIcon': Icons.eco,
-      'image': 'https://lh3.googleusercontent.com/aida-public/AB6AXuAUxhxXn02JC9ZlZC1leQFmMySo2z8vn7xn-f8BYennSdXwOhdgAEP__lp6-aMf10Yixs3jdWRAsF-xewZEoHlZg8Lm2sAzkLAcp1_GSSQKJr1pBcw6WVdSfGwAmxToOBF-vrQSeAkNFbhQ63392Cy8FuWZnJ0ggUeTkeA7o1518757gXZiZyx058jTrYioBfTRJqXrsacIoSer-vJYU9iBPYZggLci3nrm6FzoVcdq2Adyip3XHWPCvmWH3iXIu1YBwRkqdlW9_CjB',
-    },
-  ];
+  List<Map<String, dynamic>> _plots = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlots();
+  }
+
+  Future<void> _loadPlots() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? plotsJson = prefs.getString('saved_plots');
+    if (plotsJson != null) {
+      final List<dynamic> decoded = jsonDecode(plotsJson);
+      setState(() {
+        _plots = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+      });
+    }
+  }
+
+  Future<void> _savePlots() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encoded = jsonEncode(_plots);
+    await prefs.setString('saved_plots', encoded);
+  }
+
 
   void _showAddPlotDialog() {
     final nameController = TextEditingController();
@@ -71,10 +80,10 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                       'status': 'Active',
                       'crop': cropController.text.isEmpty ? 'Unknown' : cropController.text,
                       'size': sizeController.text,
-                      'cropIcon': Icons.eco,
                       'image': 'https://lh3.googleusercontent.com/aida-public/AB6AXuCMV0j46kCN8SE8dGnrFJfOcr_5ZW5HxGZgQXhgd5Esd20lYI2GRwFFe1cUBnJjQW7JcSjFznl8iwtyGEf4ynTus0w2OpiL_fBt40CLLlS0wZU2cQAbP603lUfnV3uYESpfc68LQ16cqTQ3fx8ngmwiqUp8CJ4Vd5rfWmZf2Es4vVmELwoVP4TA6uu-rTWXW_f6tWbT-froAuySSxRSGC9rJ2Uhp1bWsVtoPi0AcWYGV8ixvVNiAtTW9JZ4It-VbQzORYP3ovQOubpD',
                     });
                   });
+                  _savePlots();
                   Navigator.pop(context);
                 }
               },
@@ -248,7 +257,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                     status: plot['status'],
                     crop: plot['crop'],
                     size: plot['size'],
-                    cropIcon: plot['cropIcon'],
                     image: plot['image'],
                   ),
                 );
@@ -324,7 +332,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     );
   }
 
-  Widget _buildPlotCard(BuildContext context, {required int index, required String title, required String status, required String crop, required String size, required IconData cropIcon, required String image}) {
+  Widget _buildPlotCard(BuildContext context, {required int index, required String title, required String status, required String crop, required String size, required String image}) {
     final theme = Theme.of(context);
     return Container(
       height: 160,
@@ -378,6 +386,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                         setState(() {
                           _plots.removeAt(index);
                         });
+                        _savePlots();
                       }, 
                       icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
                     ),
@@ -386,7 +395,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 const Spacer(),
                 Row(
                   children: [
-                    _buildStat(crop, cropIcon: cropIcon),
+                    _buildStat(crop, cropIcon: Icons.eco),
                     const SizedBox(width: 24),
                     _buildStat('Size', textValue: size),
                   ],
