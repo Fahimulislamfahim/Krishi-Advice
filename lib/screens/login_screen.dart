@@ -94,50 +94,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 40),
                       
-                      // Role Selection Canvas
+                      // Compact Role Selection Segment
                       Container(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(999),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withAlpha(10),
-                              blurRadius: 24,
+                              color: Colors.black.withAlpha(5),
+                              blurRadius: 16,
                               offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              'Select Your Role',
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                color: theme.colorScheme.onSurface,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            // Farmer Role Card
-                            _buildRoleCard(
-                              title: 'Farmer',
-                              description: 'Manage crops, view weather, and log activities.',
-                              icon: Icons.agriculture,
-                              value: 'farmer',
-                              iconBgColor: AppColors.tertiaryFixed,
-                              iconColor: AppColors.tertiaryContainer,
-                            ),
-                            const SizedBox(height: 16),
-                            // Data Analyst Role Card
-                            _buildRoleCard(
-                              title: 'Data Analyst',
-                              description: 'Review yields, soil metrics, and historical trends.',
-                              icon: Icons.analytics,
-                              value: 'analyst',
-                              iconBgColor: AppColors.secondaryFixed,
-                              iconColor: AppColors.onSecondaryFixed,
-                            ),
+                            Expanded(child: _buildRoleSegment(title: 'Farmer', icon: Icons.agriculture, value: 'farmer')),
+                            const SizedBox(width: 8),
+                            Expanded(child: _buildRoleSegment(title: 'Analyst', icon: Icons.analytics, value: 'analyst')),
                           ],
                         ),
                       ),
@@ -289,13 +264,10 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildRoleCard({
+  Widget _buildRoleSegment({
     required String title,
-    required String description,
     required IconData icon,
     required String value,
-    required Color iconBgColor,
-    required Color iconColor,
   }) {
     final theme = Theme.of(context);
     final isSelected = _selectedRole == value;
@@ -307,45 +279,26 @@ class _LoginScreenState extends State<LoginScreen> {
         });
       },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.all(24),
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? theme.colorScheme.primaryContainer : AppColors.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
+          color: isSelected ? theme.colorScheme.primaryContainer : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: iconBgColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: iconColor, size: 32),
+            Icon(
+              icon,
+              size: 20,
+              color: isSelected ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(width: 24),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      color: isSelected ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurface,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isSelected 
-                          ? theme.colorScheme.onPrimaryContainer.withAlpha(200) 
-                          : theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: isSelected ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurfaceVariant,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ],
